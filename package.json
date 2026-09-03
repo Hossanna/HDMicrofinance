@@ -1,0 +1,35 @@
+{
+  "name": "hdmicrofinance",
+  "version": "1.0.0",
+  "description": "A Microfinance banking system",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "find . -path './node_modules' -prune -o -name '*.js' -print -exec node --check {} \\;",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "HDMicrofinance"
+  },
+  "keywords": [
+    "microfinance",
+    "bank"
+  ],
+  "author": "Hosanna Bivan",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.11.0",
+    "dotenv": "^17.4.2",
+    "env": "^0.0.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.9.4",
+    "multer": "^2.3.0",
+    "multer-storage-cloudinary": "^4.0.0",
+    "nodemailer": "^9.1.0",
+    "nodemon": "^3.1.14"
+  }
+} 
