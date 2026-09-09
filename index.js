@@ -8,8 +8,11 @@ const bankingRoutes = require("./Routes/BankingRoutes");
 const transactionRoutes = require("./Routes/TransactionRoutes");
 const authRoutes = require("./Routes/AuthRoutes");
 const fintechRoutes = require("./Routes/FintechRoutes");
-const providerOperationRoutes = require("./Routes/ProviderOperationRoutes");
+// const providerOperationRoutes = require("./Routes/ProviderOperationRoutes");
 const errorHandler = require("./Middleware/errorHandler");
+const identityRoutes = require("./Routes/IdentityRoutes");
+
+// 6a9c2882f760c1475300bc10
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -35,10 +38,12 @@ app.get("/health", (req, res) => {
 app.use("/api/customers", customerRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/fintech", fintechRoutes);
-app.use("/api", providerOperationRoutes);
+// app.use("/api", providerOperationRoutes);
 app.use("/api/accounts", accountRoutes);
 app.use("/api/banking", bankingRoutes);
 app.use("/api/transactions", transactionRoutes);
+app.use("/api/identity", identityRoutes);
+
 
 app.use((req, res) => {
   res.status(404).json({

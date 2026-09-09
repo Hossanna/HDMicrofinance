@@ -1,16 +1,37 @@
 const express = require("express");
-const {
-  createCustomerAccount,
-  getAccounts,
-  getAccount,
-  refreshAccountFromProvider,
-} = require("../Controllers/AccountController");
 
 const router = express.Router();
 
-router.post("/", createCustomerAccount);
-router.get("/", getAccounts);
-router.get("/:id", getAccount);
-router.post("/:id/refresh", refreshAccountFromProvider);
+const accountController =
+  require("../Controllers/accountController");
+
+router.post(
+  "/create",
+  accountController.createCustomerAccount
+);
+router.get(
+  "/name-enquiry/:accountNumber",
+  accountController.getNameEnquiry
+);
+router.get(
+  "/balance/:accountNumber",
+  accountController.getAccountBalance
+);
+router.post(
+  "/transfer",
+  accountController.transferFunds
+);
+router.get(
+  "/",
+  accountController.getFintechAccounts
+);
+router.get(
+  "/customer/:customerId",
+  accountController.getCustomerAccounts
+);
+router.get(
+  "/:accountId",
+  accountController.getAccount
+);
 
 module.exports = router;

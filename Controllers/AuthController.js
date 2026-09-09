@@ -24,11 +24,11 @@ const generateToken = asyncHandler(async (req, res) => {
   const token = jwt.sign(
     {
       apiKey,
-      providerToken: providerToken.token || providerToken.access_token,
+      providerToken: providerToken.token || providerToken.provider.token,
       type: "fintech",
     },
     process.env.JWT_SECRET || "hdmicrofinance-dev-secret",
-    { expiresIn: process.env.JWT_EXPIRES_IN || "6h" }
+    // { expiresIn: process.env.JWT_EXPIRES_IN || "" }
   );
 
   res.json({

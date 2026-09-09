@@ -7,99 +7,88 @@ const customerSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+
     lastName: {
       type: String,
       required: true,
       trim: true,
     },
+
     middleName: {
       type: String,
       trim: true,
     },
+
     email: {
       type: String,
       trim: true,
       lowercase: true,
-      unique: true,
-      sparse: true,
     },
+
     phone: {
       type: String,
       required: true,
-      trim: true,
       unique: true,
-    },
-    bvn: {
-      type: String,
       trim: true,
-      select: false,
     },
-    nin: {
-      type: String,
-      trim: true,
-      select: false,
-    },
+
     kycType: {
       type: String,
-      enum: ["bvn", "nin"],
+      enum: ["nin", "bvn"],
+      required: true,
     },
+
     kycID: {
       type: String,
+      required: true,
     },
-    identityValueMasked: String,
-    identityVerificationReference: String,
-    identityVerifiedAt: Date,
-    dob: Date,
+
+    dob: {
+      type: Date,
+      required: true,
+    },
+
     gender: {
       type: String,
-      enum: ["male", "female", "other"],
     },
+
     address: {
-      street: String,
-      city: String,
+      country: String,
       state: String,
-      country: {
-        type: String,
-        default: "Nigeria",
-      },
+      city: String,
+      addressLine: String,
     },
-    kycLevel: {
-      type: String,
-      enum: ["1", "2", "3"],
-      default: "1",
-    },
+
     kycStatus: {
       type: String,
-      enum: ["pending", "verified", "rejected"],
+      enum: ["pending", "validated"],
       default: "pending",
     },
+
     onboardingStatus: {
       type: String,
       enum: [
         "initiated",
-        "identity_verified",
+        "kyc_validated",
         "account_created",
-        "completed",
-        "failed",
       ],
       default: "initiated",
     },
-    providerCustomerId: String,
-    providerPayload: mongoose.Schema.Types.Mixed,
-    metadata: mongoose.Schema.Types.Mixed,
+
+    providerCustomerId: {
+      type: String,
+    },
+
+    metadata: {
+      type: mongoose.Schema.Types.Mixed,
+    },
   },
   {
     timestamps: true,
-  },
+  }
 );
 
-customerSchema.virtual("fullName").get(function getFullName() {
-  return [this.firstName, this.middleName, this.lastName]
-    .filter(Boolean)
-    .join(" ");
-});
-
-customerSchema.set("toJSON", { virtuals: true });
-customerSchema.set("toObject", { virtuals: true });
-
-module.exports = mongoose.model("Customer", customerSchema);
+module.exports = mongoose.model(
+  "Customer",
+  customerSchema
+);

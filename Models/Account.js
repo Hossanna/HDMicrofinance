@@ -7,49 +7,56 @@ const accountSchema = new mongoose.Schema(
       ref: "Customer",
       required: true,
     },
+
     providerAccountId: {
       type: String,
-      index: true,
     },
+
     accountName: {
       type: String,
       required: true,
-      trim: true,
     },
+
     accountNumber: {
       type: String,
       required: true,
-      trim: true,
       unique: true,
     },
+
+    bankCode: {
+      type: String,
+    },
+
+    bankName: {
+      type: String,
+    },
+
     accountType: {
       type: String,
-      enum: ["savings", "current", "wallet"],
+      enum: ["savings", "current"],
       default: "savings",
     },
-    currency: {
-      type: String,
-      default: "NGN",
-    },
+
     balance: {
       type: Number,
       default: 0,
     },
+
     kycLevel: {
       type: String,
-      enum: ["1", "2", "3"],
       default: "1",
     },
-    status: {
-      type: String,
-      enum: ["active", "inactive", "restricted", "closed"],
-      default: "active",
+
+    providerPayload: {
+      type: mongoose.Schema.Types.Mixed,
     },
-    providerPayload: mongoose.Schema.Types.Mixed,
   },
   {
     timestamps: true,
   }
 );
 
-module.exports = mongoose.model("Account", accountSchema);
+module.exports = mongoose.model(
+  "Account",
+  accountSchema
+);
