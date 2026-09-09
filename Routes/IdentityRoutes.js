@@ -13,4 +13,14 @@ router.post(
   identityController.validateNin
 );
 
+router.post(
+  "/insert-bvn",
+  identityController.insertBvn
+);
+
+router.post(
+  "/validate-bvn",
+  identityController.validateBvn
+);
+
 module.exports = router;

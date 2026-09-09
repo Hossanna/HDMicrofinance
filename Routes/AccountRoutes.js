@@ -33,5 +33,9 @@ router.get(
   "/:accountId",
   accountController.getAccount
 );
+router.get(
+  "/transaction/:reference",
+  accountController.getTransactionByReference
+);  
 
 module.exports = router;

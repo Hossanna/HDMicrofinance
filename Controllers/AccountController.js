@@ -41,36 +41,36 @@ const createCustomerAccount = asyncHandler(async (req, res) => {
 
   console.log("Phoenix account response:", providerAccount);
 
-  // const account = await Account.create({
-  //   customer: customer._id,
+  const account = await Account.create({
+    customer: customer._id,
 
-  //   accountName: `${customer.firstName} ${customer.lastName}`,
+    accountName: `${customer.firstName} ${customer.lastName}`,
 
-  //   accountNumber: providerAccount?.accountNumber,
+    accountNumber: providerAccount.account.accountNumber,
 
-  //   bankCode: providerAccount?.bankCode,
+    bankCode: providerAccount.account.bankCode,
 
-  //   bankName: providerAccount?.bankName,
+    kycType: providerAccount.account.kycType,
 
-  //   accountType,
+    accountType,
 
-  //   balance: Number(providerAccount?.balance || 0),
+    balance: Number(providerAccount.account.balance || 0),
 
-  //   kycLevel: "1",
+    kycLevel: "1",
 
-  //   providerPayload: providerAccount,
-  // });
+    providerPayload: providerAccount,
+  });
 
-  // customer.onboardingStatus = "account_created";
+  customer.onboardingStatus = "account_created";
 
-  // await customer.save();
+  await customer.save();
 
-  // res.status(201).json({
-  //   success: true,
-  //   message: "Account created successfully",
-  //   data: account,
-  //   provider: providerAccount,
-  // });
+  res.status(201).json({
+    success: true,
+    message: "Account created successfully",
+    data: account,
+    provider: providerAccount,
+  });
 });
 
 const getCustomerAccounts = asyncHandler(async (req, res) => {
@@ -153,9 +153,9 @@ const getAccountBalance = asyncHandler(async (req, res) => {
 
 const getNameEnquiry = asyncHandler(async (req, res) => {
   const { accountNumber } = req.params;
-  const { bankCode } = req.query;
+  // const { bankCode } = req.query;
 
-  const providerResponse = await nibssByPhoenix.nameEnquiry({ bankCode, accountNumber });
+  const providerResponse = await nibssByPhoenix.nameEnquiry(accountNumber);
 
   res.json({
     success: true,
@@ -243,6 +243,25 @@ const transferFunds = asyncHandler(async (req, res) => {
   });
 });
 
+const getTransactionByReference = asyncHandler(async (req, res) => {
+  const { reference } = req.params;
+
+  if (!reference) {
+    throw new ApiError("reference is required", 400);
+  } 
+
+  const transaction = await Transaction.findOne({ reference });
+
+  if (!transaction) {
+    throw new ApiError("Transaction not found", 404);
+  }
+
+  res.json({
+    success: true,
+    data: transaction,
+  });
+});
+
 
 module.exports = {
   createCustomerAccount,
@@ -252,6 +271,6 @@ module.exports = {
   getAccountBalance,
   getNameEnquiry,
   transferFunds,
-
+  getTransactionByReference,
 };
 

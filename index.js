@@ -8,11 +8,9 @@ const bankingRoutes = require("./Routes/BankingRoutes");
 const transactionRoutes = require("./Routes/TransactionRoutes");
 const authRoutes = require("./Routes/AuthRoutes");
 const fintechRoutes = require("./Routes/FintechRoutes");
-// const providerOperationRoutes = require("./Routes/ProviderOperationRoutes");
 const errorHandler = require("./Middleware/errorHandler");
 const identityRoutes = require("./Routes/IdentityRoutes");
 
-// 6a9c2882f760c1475300bc10
 
 const app = express();
 const PORT = process.env.PORT || 5000;
