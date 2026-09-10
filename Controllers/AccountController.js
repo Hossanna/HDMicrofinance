@@ -1,5 +1,7 @@
 const Account = require("../Models/Account");
 const Customer = require("../Models/Customer");
+const Transaction = require("../Models/Transaction");
+const generateReference = require("../Utils/reference");
 
 const asyncHandler = require("../Middleware/asyncHandler");
 const ApiError = require("../Utils/apiError");
@@ -9,6 +11,39 @@ const nibssByPhoenix = require("../Services/nibssByPhoenixService");
 const formatDob = (dob) => {
   return new Date(dob).toISOString().slice(0, 10);
 };
+
+const mapProviderStatus = (status) => {
+  if (!status) {
+    return "pending";
+  }
+
+  const normalizedStatus = String(status).toLowerCase();
+
+  if (
+    normalizedStatus === "success" ||
+    normalizedStatus === "successful" ||
+    normalizedStatus === "completed"
+  ) {
+    return "successful";
+  }
+
+  if (
+    normalizedStatus === "failed" ||
+    normalizedStatus === "failure"
+  ) {
+    return "failed";
+  }
+
+  if (
+    normalizedStatus === "pending" ||
+    normalizedStatus === "processing"
+  ) {
+    return "pending";
+  }
+
+  return "pending";
+};
+
 
 const createCustomerAccount = asyncHandler(async (req, res) => {
   const { customerId, accountType = "savings" } = req.body;
@@ -168,96 +203,124 @@ const transferFunds = asyncHandler(async (req, res) => {
   const {
     accountId,
     sourceAccountNumber,
-    bankCode,
-    destinationBankCode,
-    accountNumber,
     destinationAccountNumber,
-    accountName,
+    accountNumber,
     destinationAccountName,
+    accountName,
     amount,
     narration,
+    reference: requestReference,
+    ref,
   } = req.body;
 
-  const beneficiaryAccountNumber = destinationAccountNumber || accountNumber;
-  const beneficiaryBankCode = destinationBankCode || bankCode;
+  const beneficiaryAccountNumber =
+    destinationAccountNumber || accountNumber;
 
-  if ((!accountId && !sourceAccountNumber) || !beneficiaryBankCode || !beneficiaryAccountNumber || !amount) {
+  if ((!accountId && !sourceAccountNumber) ||
+      !beneficiaryAccountNumber ||
+      !amount) {
     throw new ApiError(
-      "accountId or sourceAccountNumber, destination bank code, destination account number and amount are required",
+      "accountId or sourceAccountNumber, destination account number and amount are required",
       400
     );
   }
 
   const sourceAccount = accountId
     ? await Account.findById(accountId)
-    : await Account.findOne({ accountNumber: sourceAccountNumber });
+    : await Account.findOne({
+        accountNumber: sourceAccountNumber,
+      });
 
   if (!sourceAccount) {
     throw new ApiError("Source account not found", 404);
   }
 
-  if (!sourceAccount.providerAccountId) {
-    throw new ApiError("Source account does not have a provider account id", 400);
+  if (!sourceAccount.accountNumber) {
+    throw new ApiError(
+      "Source account does not have an account number",
+      400
+    );
   }
 
-  const reference = req.body.reference || req.body.ref || generateReference("TRF");
+  const reference =
+    requestReference ||
+    ref ||
+    generateReference("TRF");
+
+  // Create our local transaction first
   const transaction = await Transaction.create({
     account: sourceAccount._id,
     customer: sourceAccount.customer,
     reference,
     amount: Number(amount),
     narration,
-    destinationBankCode: beneficiaryBankCode,
     destinationAccountNumber: beneficiaryAccountNumber,
-    destinationAccountName: destinationAccountName || accountName,
+    destinationAccountName:
+      destinationAccountName || accountName,
     status: "pending",
   });
 
+  // Phoenix transfer
   const providerResponse = await nibssByPhoenix.transfer({
-    providerAccountId: sourceAccount.providerAccountId,
-    bankCode: beneficiaryBankCode,
-    accountNumber: beneficiaryAccountNumber,
-    amount,
-    narration,
-    reference,
+    from: sourceAccount.accountNumber,
+    to: beneficiaryAccountNumber,
+    amount: String(amount),
   });
 
-  transaction.providerTransactionId = providerResponse.id;
-  transaction.status = mapProviderStatus(providerResponse.status);
-  transaction.fee = Number(providerResponse.fee || 0);
-  transaction.providerMessage = providerResponse.message;
-  transaction.providerPayload = providerResponse;
-  await transaction.save();
+  console.log("Phoenix transfer response:", providerResponse);
 
-  if (providerResponse.account_balance !== undefined) {
-    sourceAccount.balance = Number(providerResponse.account_balance || sourceAccount.balance);
-    await sourceAccount.save();
+  // Save provider response
+  transaction.providerPayload = providerResponse;
+
+  if (providerResponse.transactionId) {
+    transaction.providerTransactionId =
+      providerResponse.transactionId;
   }
+
+  if (providerResponse._id) {
+    transaction.providerTransactionId =
+      providerResponse.id;
+  }
+
+  if (providerResponse.status) {
+    transaction.status =
+      mapProviderStatus(providerResponse.status);
+  }
+
+  if (providerResponse.message) {
+    transaction.providerMessage =
+      providerResponse.message;
+  }
+
+  await transaction.save();
 
   res.status(201).json({
     success: true,
     message: "Transfer submitted successfully",
     data: transaction,
     provider: providerResponse,
-    responseBody: providerResponse,
   });
 });
+
 
 const getTransactionByReference = asyncHandler(async (req, res) => {
   const { reference } = req.params;
 
   if (!reference) {
     throw new ApiError("reference is required", 400);
-  } 
+  }
 
-  const transaction = await Transaction.findOne({ reference });
+  const transaction = await Transaction.findOne({
+    reference: reference.trim(),
+  });
 
   if (!transaction) {
     throw new ApiError("Transaction not found", 404);
   }
 
-  res.json({
+  res.status(200).json({
     success: true,
+    message: "Transaction retrieved successfully",
     data: transaction,
   });
 });

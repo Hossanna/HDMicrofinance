@@ -17,10 +17,6 @@ router.get(
   "/balance/:accountNumber",
   accountController.getAccountBalance
 );
-router.post(
-  "/transfer",
-  accountController.transferFunds
-);
 router.get(
   "/",
   accountController.getFintechAccounts
@@ -32,6 +28,10 @@ router.get(
 router.get(
   "/:accountId",
   accountController.getAccount
+);
+router.post(
+  "/transfer",
+  accountController.transferFunds
 );
 router.get(
   "/transaction/:reference",

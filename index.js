@@ -4,7 +4,6 @@ const express = require("express");
 const connectDB = require("./Config/db");
 const customerRoutes = require("./Routes/CustomerRoutes");
 const accountRoutes = require("./Routes/AccountRoutes");
-const bankingRoutes = require("./Routes/BankingRoutes");
 const transactionRoutes = require("./Routes/TransactionRoutes");
 const authRoutes = require("./Routes/AuthRoutes");
 const fintechRoutes = require("./Routes/FintechRoutes");
@@ -36,9 +35,7 @@ app.get("/health", (req, res) => {
 app.use("/api/customers", customerRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/fintech", fintechRoutes);
-// app.use("/api", providerOperationRoutes);
 app.use("/api/accounts", accountRoutes);
-app.use("/api/banking", bankingRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/identity", identityRoutes);
 
